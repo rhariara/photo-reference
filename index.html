@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Little dream us Photo Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F2EE; --panel:#FFFFFF; --line:#DAD9D3; --text:#1C1E22; --muted:#6B7079;
+  --accent:#2563EB; --accent-ink:#FFFFFF; --field:#F7F6F2; --canvas-bg:#E6E5E0;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#17191D; --panel:#1F2228; --line:#2F333B; --text:#ECEAE4; --muted:#8E939C;
+    --accent:#3B82F6; --accent-ink:#FFFFFF; --field:#15171B; --canvas-bg:#101215; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17191D; --panel:#1F2228; --line:#2F333B; --text:#ECEAE4; --muted:#8E939C;
+  --accent:#3B82F6; --accent-ink:#FFFFFF; --field:#15171B; --canvas-bg:#101215; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:Manrope,"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:340px 1fr;height:100%}
+aside{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:20px 18px 32px;display:flex;flex-direction:column;gap:18px}
+main{display:flex;flex-direction:column;min-width:0}
+h1{font-size:18px;font-weight:800;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:2px}
+
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:18px 14px;text-align:center;cursor:pointer;background:var(--field);transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--field))}
+.drop strong{display:block;font-weight:600}
+.drop span{color:var(--muted);font-size:12px}
+.drop input{display:none}
+
+.thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.thumb{position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;background:var(--field);cursor:grab;border:1.5px solid transparent}
+.thumb.dragging{opacity:.35}
+.thumb.over{border-color:var(--accent)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.thumb .n{position:absolute;left:4px;top:4px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px}
+.thumb .x{position:absolute;right:3px;top:3px;width:18px;height:18px;border:0;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:18px;padding:0;cursor:pointer;opacity:0}
+.thumb:hover .x,.thumb:focus-within .x{opacity:1}
+.thumbs-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.thumbs-head b{font-weight:600}
+.link{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:12px;font-weight:600}
+.link:hover{text-decoration:underline}
+
+.group{display:flex;flex-direction:column;gap:10px}
+.group>b{font-weight:800;font-size:12px;color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+label.f.wide{grid-column:1/-1}
+.f input[type=text],.f select{background:var(--field);border:1px solid var(--line);border-radius:7px;padding:7px 9px;color:var(--text);width:100%}
+.f input[type=text]:focus,.f select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.f input[type=range]{width:100%;accent-color:var(--accent)}
+.f .val{color:var(--text);font-weight:600}
+.seg{display:flex;background:var(--field);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{flex:1;border:0;background:none;padding:7px 4px;cursor:pointer;color:var(--muted);font-weight:600;font-size:12px}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.swatches{display:flex;gap:6px}
+.swatches button{width:30px;height:30px;border-radius:7px;border:2px solid var(--line);cursor:pointer;padding:0}
+.swatches button[aria-pressed=true]{border-color:var(--accent);outline:2px solid var(--accent);outline-offset:1px}
+
+.export{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding-top:6px}
+.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:9px;padding:12px;font-weight:800;font-size:14px;cursor:pointer}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.status{font-size:12px;color:var(--muted);min-height:16px}
+
+.stage{flex:1;display:flex;align-items:center;justify-content:center;padding:28px;background:var(--canvas-bg);min-height:0;position:relative}
+canvas{max-width:100%;max-height:100%;box-shadow:0 10px 40px rgba(0,0,0,.25);background:#fff}
+.empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center;padding:30px;pointer-events:none}
+.pages{display:flex;gap:6px;padding:12px 28px;border-top:1px solid var(--line);background:var(--panel);align-items:center;flex-wrap:wrap}
+.pages span{color:var(--muted);font-size:12px;margin-right:6px}
+.pages button{border:1px solid var(--line);background:var(--field);border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:600;font-size:12px}
+.pages button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pages[hidden]{display:none}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;height:auto;min-height:100%}
+  aside{border-right:0;border-bottom:1px solid var(--line);order:2}
+  main{order:1;min-height:60vh}
+  .stage{padding:16px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>Little dream us Photo Reference<small>Susun foto jadi satu grid rapi dengan label nomor.</small></h1>
+
+  <label class="drop" id="drop">
+    <strong>Drop foto di sini atau klik untuk pilih</strong>
+    <span>JPG, PNG, WebP · bisa banyak sekaligus</span>
+    <input type="file" id="file" accept="image/*" multiple>
+  </label>
+
+  <div class="group" id="thumbWrap" hidden>
+    <div class="thumbs-head"><b id="count">0 foto</b><div><button class="link" id="sortName">Urutkan nama file</button> &nbsp; <button class="link" id="clear">Hapus semua</button></div></div>
+    <div class="thumbs" id="thumbs"></div>
+    <span class="status">Drag thumbnail untuk ubah urutan.</span>
+  </div>
+
+  <div class="group">
+    <b>Label</b>
+    <div class="row">
+      <label class="f">Awalan<input type="text" id="prefix" value="Reference"></label>
+      <label class="f">Mulai dari<input type="text" id="start" value="1" inputmode="numeric"></label>
+      <label class="f wide">Posisi label
+        <div class="seg" data-opt="labelPos">
+          <button aria-pressed="true" data-v="tl">Kiri atas</button><button data-v="tr">Kanan atas</button><button data-v="bl">Kiri bawah</button><button data-v="br">Kanan bawah</button>
+        </div>
+      </label>
+      <label class="f wide">Judul di atas grid (opsional)<input type="text" id="title" value="Little Dream Us - Photo Reference" placeholder="mis. Referensi Shoot – Produk X"></label>
+    </div>
+  </div>
+
+  <div class="group">
+    <b>Grid</b>
+    <div class="row">
+      <label class="f">Kolom<select id="cols"><option value="0">Otomatis</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+      <label class="f">Foto per halaman<select id="perPage"><option>4</option><option>6</option><option>9</option><option>12</option><option>16</option><option selected>20</option><option>25</option></select></label>
+      <label class="f wide">Jarak antar foto <span class="val" id="gapVal">24 px</span><input type="range" id="gap" min="0" max="80" value="24"></label>
+      <label class="f wide">Cara isi sel
+        <div class="seg" data-opt="fit">
+          <button aria-pressed="true" data-v="cover">Crop penuhi sel</button><button data-v="contain">Foto utuh</button><button data-v="justified">Ikut rasio asli</button>
+        </div>
+      </label>
+      <label class="f wide">Warna latar
+        <div class="swatches" data-opt="bg">
+          <button aria-pressed="true" data-v="#FFFFFF" style="background:#FFFFFF" title="Putih"></button>
+          <button data-v="#E9E9E9" style="background:#E9E9E9" title="Abu terang"></button>
+          <button data-v="#2A2A2A" style="background:#2A2A2A" title="Abu gelap"></button>
+          <button data-v="#000000" style="background:#000000" title="Hitam"></button>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="group">
+    <b>Output</b>
+    <div class="row">
+      <label class="f">Ukuran<select id="size">
+        <option value="2160x3840" selected>2160 × 3840 (vertikal)</option>
+        <option value="1080x1920">1080 × 1920 (vertikal, ringan)</option>
+        <option value="3840x2160">3840 × 2160 (horizontal)</option>
+        <option value="1920x1080">1920 × 1080 (horizontal, ringan)</option>
+        <option value="2160x2160">2160 × 2160 (persegi)</option>
+      </select></label>
+      <label class="f">Format<select id="fmt"><option value="jpg" selected>JPG</option><option value="png">PNG</option></select></label>
+    </div>
+  </div>
+
+  <div class="export">
+    <button class="primary" id="export" disabled>Export grid</button>
+    <div class="status" id="status"></div>
+  </div>
+</aside>
+
+<main>
+  <div class="stage">
+    <canvas id="cv" width="540" height="960"></canvas>
+    <div class="empty" id="empty">Preview muncul di sini setelah foto dimasukkan.</div>
+  </div>
+  <div class="pages" id="pages" hidden><span>Halaman</span></div>
+</main>
+</div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const photos = [];
+const S = { prefix:"Reference", start:1, labelPos:"tl", title:"Little Dream Us - Photo Reference", cols:0, perPage:20, gap:24, fit:"cover", bg:"#FFFFFF", size:"2160x3840", fmt:"jpg", page:0 };
+let uid = 0, raf = 0, downloads = null, fontsReady = false;
+
+document.fonts.ready.then(() => { fontsReady = true; schedule(); });
+if (window.claude && claude.use) claude.use("downloads").then(d => { downloads = d; }).catch(() => {});
+
+/* ---------- input ---------- */
+const drop = $("#drop"), fileIn = $("#file");
+["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", ev => addFiles(ev.dataTransfer.files));
+fileIn.addEventListener("change", () => { addFiles(fileIn.files); fileIn.value = ""; });
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", e => { e.preventDefault(); if (e.target.closest("#drop") || e.target.closest(".thumb")) return; addFiles(e.dataTransfer.files); });
+
+async function addFiles(list) {
+  const files = [...list].filter(f => f.type.startsWith("image/"));
+  if (!files.length) { status("Tidak ada file gambar yang bisa dibaca."); return; }
+  status("Memuat " + files.length + " foto…");
+  let fail = 0;
+  await Promise.all(files.map(f => loadPhoto(f).then(p => photos.push(p)).catch(() => fail++)));
+  status(fail ? fail + " file gagal dibaca (HEIC tidak didukung browser)." : "");
+  renderThumbs(); schedule();
+}
+function loadPhoto(file) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => res({ id: ++uid, name: file.name, img, url, w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => { URL.revokeObjectURL(url); rej(); };
+    img.src = url;
+  });
+}
+
+/* ---------- thumbnails & reorder ---------- */
+const thumbs = $("#thumbs");
+let dragId = null;
+function renderThumbs() {
+  $("#thumbWrap").hidden = photos.length === 0;
+  $("#export").disabled = photos.length === 0;
+  $("#empty").style.display = photos.length ? "none" : "";
+  $("#count").textContent = photos.length + " foto";
+  thumbs.innerHTML = "";
+  photos.forEach((p, i) => {
+    const d = document.createElement("div");
+    d.className = "thumb"; d.draggable = true; d.dataset.id = p.id; d.title = p.name;
+    d.innerHTML = `<img alt=""><span class="n"></span><button class="x" aria-label="Hapus ${p.name}">×</button>`;
+    d.querySelector("img").src = p.url;
+    d.querySelector(".n").textContent = S.start + i;
+    d.querySelector(".x").onclick = () => { photos.splice(i, 1); renderThumbs(); schedule(); };
+    d.addEventListener("dragstart", e => { dragId = p.id; d.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+    d.addEventListener("dragend", () => { dragId = null; d.classList.remove("dragging"); thumbs.querySelectorAll(".over").forEach(x => x.classList.remove("over")); });
+    d.addEventListener("dragover", e => { if (dragId == null) return; e.preventDefault(); d.classList.add("over"); });
+    d.addEventListener("dragleave", () => d.classList.remove("over"));
+    d.addEventListener("drop", e => {
+      e.preventDefault(); e.stopPropagation(); if (dragId == null) return;
+      const from = photos.findIndex(x => x.id === dragId), to = photos.findIndex(x => x.id === p.id);
+      if (from < 0 || to < 0 || from === to) return;
+      const [m] = photos.splice(from, 1); photos.splice(to, 0, m);
+      renderThumbs(); schedule();
+    });
+    thumbs.appendChild(d);
+  });
+}
+$("#sortName").onclick = () => { photos.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })); renderThumbs(); schedule(); };
+$("#clear").onclick = () => { photos.length = 0; S.page = 0; renderThumbs(); schedule(); };
+
+/* ---------- settings ---------- */
+const bind = (id, key, parse = v => v) => $(id).addEventListener("input", e => { S[key] = parse(e.target.value); if (key === "start") renderThumbs(); if (key === "perPage") S.page = 0; schedule(); });
+bind("#prefix", "prefix"); bind("#title", "title");
+bind("#start", "start", v => parseInt(v, 10) || 1);
+bind("#cols", "cols", v => +v); bind("#perPage", "perPage", v => +v);
+bind("#gap", "gap", v => { $("#gapVal").textContent = v + " px"; return +v; });
+bind("#size", "size"); bind("#fmt", "fmt");
+document.querySelectorAll("[data-opt]").forEach(seg => {
+  seg.querySelectorAll("button").forEach(b => b.onclick = () => {
+    seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", "true"); S[seg.dataset.opt] = b.dataset.v;
+    if (seg.dataset.opt === "fit") $("#cols").disabled = S.fit === "justified";
+    schedule();
+  });
+});
+
+/* ---------- layout ---------- */
+function outSize() { const [w, h] = S.size.split("x").map(Number); return { W: w, H: h }; }
+function pages() { const out = []; for (let i = 0; i < photos.length; i += S.perPage) out.push(photos.slice(i, i + S.perPage)); return out; }
+function autoCols(items, W, gridH) {
+  const n = items.length;
+  const avg = items.reduce((a, p) => a + Math.log(p.w / p.h), 0) / n;
+  let best = 1, bestScore = Infinity;
+  for (let c = 1; c <= Math.min(6, n); c++) {
+    const r = Math.ceil(n / c);
+    const cell = Math.log((W / c) / (gridH / r));
+    const score = Math.abs(cell - avg) + (r * c - n) * 0.08;
+    if (score < bestScore - 1e-9) { bestScore = score; best = c; }
+  }
+  return best;
+}
+function justifyRows(items, W, g, target) {
+  const inner = W - 2 * g, rows = []; let cur = [], sumA = 0;
+  items.forEach(p => {
+    const a = p.w / p.h; cur.push(p); sumA += a;
+    if (sumA * target + g * (cur.length - 1) >= inner) { rows.push({ items: cur, h: (inner - g * (cur.length - 1)) / sumA }); cur = []; sumA = 0; }
+  });
+  if (cur.length) rows.push({ items: cur, h: target });
+  return rows;
+}
+function layout(items, W, H) {
+  const g = S.gap, headerH = S.title.trim() ? Math.round(H * 0.032) : 0;
+  const gridTop = headerH ? headerH + g : 0;
+  if (S.fit === "justified") {
+    const total = rows => gridTop + g + rows.reduce((a, r) => a + r.h + g, 0);
+    let lo = 20, hi = H, rows = justifyRows(items, W, g, lo);
+    for (let k = 0; k < 40; k++) {
+      const mid = (lo + hi) / 2, test = justifyRows(items, W, g, mid);
+      if (total(test) <= H) { lo = mid; rows = test; } else hi = mid;
+    }
+    const cells = []; let y = gridTop + g;
+    rows.forEach(r => { let x = g; r.items.forEach(p => { const w = p.w / p.h * r.h; cells.push({ x, y, w, h: r.h }); x += w + g; }); y += r.h + g; });
+    return { cells, headerH };
+  }
+  const gridH = H - gridTop;
+  const cols = S.cols || autoCols(items, W, gridH);
+  const rows = Math.ceil(items.length / cols);
+  const cellH = (gridH - g * (rows + 1)) / rows;
+  const cells = [];
+  for (let r = 0; r < rows; r++) {
+    const count = Math.min(cols, items.length - r * cols);
+    const cellW = (W - g * (count + 1)) / count;
+    for (let i = 0; i < count; i++) cells.push({ x: g + i * (cellW + g), y: gridTop + g + r * (cellH + g), w: cellW, h: cellH });
+  }
+  return { cells, headerH };
+}
+function isLight(hex) { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) > 140; }
+function cellTint(hex) { return isLight(hex) ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.07)"; }
+
+/* ---------- drawing ---------- */
+function draw(ctx, items, firstIndex, W, H) {
+  const { cells, headerH } = layout(items, W, H);
+  ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H);
+  const font = "Manrope, 'Helvetica Neue', Helvetica, Arial, sans-serif";
+  if (headerH) {
+    ctx.fillStyle = isLight(S.bg) ? "#1C1E22" : "#F2F0EA";
+    ctx.font = `800 ${Math.round(headerH * 0.36)}px ${font}`;
+    ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    ctx.fillText(S.title.trim(), S.gap + Math.round(headerH * 0.1), headerH * 0.58, W - S.gap * 2);
+  }
+  items.forEach((p, i) => {
+    const c = cells[i];
+    ctx.save(); ctx.beginPath(); ctx.rect(c.x, c.y, c.w, c.h); ctx.clip();
+    if (S.fit === "justified") {
+      ctx.drawImage(p.img, c.x, c.y, c.w, c.h);
+    } else if (S.fit === "cover") {
+      const s = Math.max(c.w / p.w, c.h / p.h), sw = c.w / s, sh = c.h / s;
+      ctx.drawImage(p.img, (p.w - sw) / 2, (p.h - sh) / 2, sw, sh, c.x, c.y, c.w, c.h);
+    } else {
+      ctx.fillStyle = cellTint(S.bg); ctx.fillRect(c.x, c.y, c.w, c.h);
+      const s = Math.min(c.w / p.w, c.h / p.h), dw = p.w * s, dh = p.h * s;
+      ctx.drawImage(p.img, c.x + (c.w - dw) / 2, c.y + (c.h - dh) / 2, dw, dh);
+    }
+    // label
+    const text = (S.prefix.trim() ? S.prefix.trim() + " " : "") + (S.start + firstIndex + i);
+    const fs = Math.max(18, Math.min(64, Math.round(Math.min(c.h, c.w) * 0.06)));
+    ctx.font = `800 ${fs}px ${font}`; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    const padX = Math.round(fs * 0.5), bh = Math.round(fs * 1.55), bw = Math.ceil(ctx.measureText(text).width) + padX * 2;
+    const m = Math.round(fs * 0.35);
+    const bx = S.labelPos.endsWith("r") ? c.x + c.w - m - bw : c.x + m;
+    const by = S.labelPos.startsWith("b") ? c.y + c.h - m - bh : c.y + m;
+    ctx.fillStyle = "rgba(0,0,0,.62)";
+    roundRect(ctx, bx, by, bw, bh, Math.round(fs * 0.25)); ctx.fill();
+    ctx.fillStyle = "#FFFFFF"; ctx.fillText(text, bx + padX, by + bh / 2 + fs * 0.04);
+    ctx.restore();
+  });
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+/* ---------- preview ---------- */
+const cv = $("#cv"), stage = $(".stage");
+function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(renderPreview); }
+function renderPreview() {
+  const pg = pages(); if (S.page >= pg.length) S.page = Math.max(0, pg.length - 1);
+  renderPages(pg.length);
+  const { W, H } = outSize();
+  const avail = { w: stage.clientWidth - 56, h: stage.clientHeight - 56 };
+  const scale = Math.min(avail.w / W, avail.h / H, 1) * (window.devicePixelRatio || 1);
+  cv.width = Math.round(W * scale); cv.height = Math.round(H * scale);
+  cv.style.width = Math.round(cv.width / (window.devicePixelRatio || 1)) + "px";
+  cv.style.height = Math.round(cv.height / (window.devicePixelRatio || 1)) + "px";
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  if (!photos.length) { ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H); return; }
+  draw(ctx, pg[S.page], S.page * S.perPage, W, H);
+}
+function renderPages(n) {
+  const el = $("#pages"); el.hidden = n < 2;
+  el.querySelectorAll("button").forEach(b => b.remove());
+  for (let i = 0; i < n; i++) {
+    const b = document.createElement("button"); b.textContent = i + 1; b.setAttribute("aria-pressed", String(i === S.page));
+    b.onclick = () => { S.page = i; schedule(); }; el.appendChild(b);
+  }
+}
+new ResizeObserver(schedule).observe(stage);
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", schedule);
+
+/* ---------- export ---------- */
+$("#export").onclick = async () => {
+  const pg = pages(); if (!pg.length) return;
+  const { W, H } = outSize();
+  const btn = $("#export"); btn.disabled = true;
+  const base = (S.title.trim() || "referensi").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "referensi";
+  try {
+    for (let i = 0; i < pg.length; i++) {
+      status(`Merender halaman ${i + 1} dari ${pg.length}…`);
+      const off = document.createElement("canvas"); off.width = W; off.height = H;
+      draw(off.getContext("2d"), pg[i], i * S.perPage, W, H);
+      const blob = await new Promise(r => off.toBlob(r, S.fmt === "png" ? "image/png" : "image/jpeg", 0.92));
+      const name = `${base}${pg.length > 1 ? "-hal" + (i + 1) : ""}-${W}x${H}.${S.fmt}`;
+      if (downloads) {
+        await downloads.save({ filename: name, data: blob });
+      } else {
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      }
+    }
+    status(pg.length > 1 ? `${pg.length} halaman tersimpan.` : "Grid tersimpan.");
+  } catch (e) {
+    status(e && e.code === "declined" ? "Download dibatalkan." : "Gagal menyimpan: " + (e && e.message || e));
+  } finally { btn.disabled = photos.length === 0; }
+};
+function status(t) { $("#status").textContent = t; }
+})();
+</script>
+</body>
+</html>
